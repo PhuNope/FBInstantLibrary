@@ -174,6 +174,558 @@ class Inventory {
     }
 }
 
+type ConnectedPlayer = {
+    getID(): string,
+    getName(): string;
+};
+
+class Player {
+    /**
+     * @en A unique identifier for the player. A Facebook user's player ID will remain constant, and is scoped to a specific game. This means that different games will have different player IDs for the same user. This function should not be called until FBInstant.initializeAsync() has resolved.
+     * @returns string? A unique identifier for the player.
+     */
+    getID(): string {
+        return FBInstant.player.getID();
+    }
+
+    /**
+     * @en A unique identifier for the player. This is the standard Facebook Application-Scoped ID which is used for all Graph API calls. If your game shares an AppID with a native game this is the ID you will see in the native game too.
+     * @returns Promise<string?> A unique identifier for the player.
+     */
+    getASIDAsync(): Promise<string> {
+        return new Promise((resolve, reject) => {
+            FBInstant.player.getASIDAsync()
+                .then((asid: string) => {
+                    resolve(asid);
+                })
+                .catch(() => {
+                    reject();
+                });
+        });
+    }
+
+    /**
+     * @en A unique identifier for the player. This is the standard Facebook Application-Scoped ID which is used for all Graph API calls. If your game shares an AppID with a native game this is the ID you will see in the native game too.
+     * @returns Promise<SignedASID?> A promise that resolves with a SignedASID object.
+     */
+    getSignedASIDAsync<T extends Object>(): Promise<T> {
+        return new Promise((resolve, reject) => {
+            FBInstant.player.getSignedASIDAsync()
+                .then((result: T) => {
+                    resolve(result);
+                })
+                .catch(() => {
+                    reject();
+                });
+        });
+    }
+
+    /**
+     * @en Fetch the player's unique identifier along with a signature that verifies that the identifier indeed comes from Facebook without being tampered with. This function should not be called until FBInstant.initializeAsync() has resolved.
+     * @param requestPayload string? A developer-specified payload to include in the signed response.
+     * @returns Promise<SignedPlayerInfo> A promise that resolves with a SignedPlayerInfo object.
+     */
+    getSignedPlayerInfoAsync<T extends Object>(requestPayload: string): Promise<T> {
+        return new Promise((resolve, reject) => {
+            FBInstant.player.getSignedPlayerInfoAsync(requestPayload)
+                .then((result: T) => {
+                    // The verification of the ID and signature should happen on server side.
+                    resolve(result);
+                })
+                .catch(() => {
+                    reject();
+                });
+        });
+    }
+
+    /**
+     * @en Returns a promise that resolves with whether the player can subscribe to the game bot or not.
+     * @returns Promise<boolean> Whether a player can subscribe to the game bot or not. Developer can only call subscribeBotAsync() after checking canSubscribeBotAsync(), and the game will only be able to show the player their bot subscription dialog once per week.
+     */
+    canSubscribeBotAsync(): Promise<boolean> {
+        return new Promise((resolve, reject) => {
+            FBInstant.player.canSubscribeBotAsync()
+                .then((can_subscribe: boolean) => {
+                    resolve(can_subscribe);
+                })
+                .catch(() => {
+                    reject();
+                });
+        });
+    }
+
+    /**
+     * @en Request that the player subscribe the bot associated to the game. The API will reject if the subscription fails - else, the player will subscribe the game bot.
+     * @returns Promise A promise that resolves if player successfully subscribed to the game bot, or rejects if request failed or player chose to not subscribe.
+     */
+    subscribeBotAsync(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            FBInstant.player.subscribeBotAsync()
+                .then(() => {
+                    resolve();
+                })
+                .catch(() => {
+                    reject();
+                });
+        });
+    }
+
+    /**
+     * @en The player's localized display name. This function should not be called until FBInstant.initializeAsync() has resolved.
+     * @returns string? The player's localized display name.
+     */
+    getName(): string {
+        return FBInstant.player.getName();
+    }
+
+    /**
+     * @example var playerImage = new Image();
+    playerImage.crossOrigin = 'anonymous';
+    // This function should be called after FBInstant.initializeAsync()
+    // resolves.
+    playerImage.src = FBInstant.player.getPhoto();
+     * @en A url to the player's public profile photo. The photo will always be a square, and with dimensions of at least 200x200. When rendering it in the game, the exact dimensions should never be assumed to be constant. It's recommended to always scale the image to a desired size before rendering. The value will always be null until FBInstant.initializeAsync() resolves.
+
+    WARNING: Due to CORS, using these photos in the game canvas can cause it to be tainted, which will prevent the canvas data from being extracted. To prevent this, set the cross-origin attribute of the images you use to 'anonymous'.
+     * @returns string? Url to the player's public profile photo.
+     */
+    getPhoto(): string {
+        return FBInstant.player.getPhoto();
+    }
+
+    /**
+     * @en Retrieve data from the designated cloud storage of the current player. Please note that JSON objects stored as string values would be returned back as JSON objects.
+     * @param keys Array<string> An array of unique keys to retrieve data for.
+     * @returns Promise<Object> A promise that resolves with an object which contains the current key-value pairs for each key specified in the input array, if they exist.
+     */
+    getDataAsync<T extends string>(key: Array<T>): Promise<{ [K in T]: any }> {
+        return new Promise((resolve, reject) => {
+            FBInstant.player
+                .getDataAsync(key)
+                .then((data) => {
+                    resolve(data);
+                })
+                .catch(() => {
+                    reject();
+                });
+        });
+    }
+
+    /**
+     * @en Set data to be saved to the designated cloud storage of the current player. The game can store up to 1MB of data for each unique player.
+     * @param data Object An object containing a set of key-value pairs that should be persisted to cloud storage. The object must contain only serializable values - any non-serializable values will cause the entire modification to be rejected.
+     * @returns Promise A promise that resolves when the input values are set. NOTE: The promise resolving does not necessarily mean that the input has already been persisted. Rather, it means that the data was valid and has been scheduled to be saved. It also guarantees that all values that were set are now available in player.getDataAsync.
+     */
+    setDataAsync(data: Object): Promise<void> {
+        return new Promise((resolve, reject) => {
+            FBInstant.player
+                .setDataAsync(data)
+                .then(() => {
+                    resolve();
+                })
+                .catch(() => {
+                    reject();
+                });
+        });
+    }
+
+    /**
+     * @en Immediately flushes any changes to the player data to the designated cloud storage. This function is expensive, and should primarily be used for critical changes where persistence needs to be immediate and known by the game. Non-critical changes should rely on the platform to persist them in the background. NOTE: Calls to player.setDataAsync will be rejected while this function's result is pending.
+     * @returns Promise A promise that resolves when changes have been persisted successfully, and rejects if the save fails.
+     */
+    flushDataAsync(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            FBInstant.player.flushDataAsync()
+                .then(() => {
+                    resolve();
+                })
+                .catch(() => {
+                    reject();
+                });
+        });
+    }
+
+    /**
+     * @en Fetches an array of ConnectedPlayer objects containing information about active players (people who played the game in the last 90 days) that are connected to the current player.
+     * @returns Promise<Array<ConnectedPlayer>> A promise that resolves with a list of connected player objects. NOTE: This function should not be called until FBInstant.initializeAsync() has resolved.
+     */
+    getConnectedPlayersAsync(): Promise<Array<ConnectedPlayer>> {
+        return new Promise((resolve, reject) => {
+            FBInstant.player.getConnectedPlayersAsync()
+                .then((players) => {
+                    resolve(players);
+                })
+                .catch(() => {
+                    reject();
+                });
+        });
+    }
+}
+
+type ContextSizeResponse = {
+    answer: boolean,
+    minSize: number,
+    maxSize: number;
+};
+
+type ContextFilter = "NEW_CONTEXT_ONLY" | "INCLUDE_EXISTING_CHALLENGES" | "NEW_PLAYERS_ONLY";
+
+type OptionsChooseAsync = { filters?: [ContextFilter], maxSize?: number, minSize?: number; };
+
+/**
+ * @en Represents information about a player who is in the context that the current player is playing in.
+ */
+interface ContextPlayer {
+    // player: PlayerData;
+    player: any;
+
+    /**
+     * @en Get the id of the context player.
+     * @returns string The ID of the context player
+     */
+    getID(): string;
+
+    /**
+     * @en Get the player's localized display name.
+     * @returns string? The player's localized display name.
+     */
+    getName(): string;
+
+    /**
+     * @en Get the player's public profile photo.
+     * @returns string? A url to the player's public profile photo
+     */
+    getPhoto(): string;
+};
+
+class Context {
+    /**
+     * @en A unique identifier for the current game context. This represents a specific context that the game is being played in (for example, a facebook post). The identifier will be null if game is being played in a solo context. This function should not be called until FBInstant.startGameAsync has resolved.
+     * @returns string? A unique identifier for the current game context.
+     */
+    getID(): string {
+        return FBInstant.context.getID();
+    }
+
+    /**
+     * @en The type of the current game context. POST - A facebook post. THREAD - A chat thread. GROUP - A facebook group. SOLO - Default context, where the player is the only participant.
+
+    This function should not be called until FBInstant.startGameAsync has resolved.
+
+    @returns ("POST" | "THREAD" | "GROUP" | "SOLO") Type of the current game context.
+     */
+    getType(): "POST" | "THREAD" | "GROUP" | "SOLO" {
+        return FBInstant.context.getType();
+    }
+
+    /**
+     * @en This function determines whether the number of participants in the current game context is between a given minimum and maximum, inclusive. If one of the bounds is null only the other bound will be checked against. It will always return the original result for the first call made in a context in a given game play session. Subsequent calls, regardless of arguments, will return the answer to the original query until a context change occurs and the query result is reset. This function should not be called until FBInstant.startGameAsync has resolved.
+     * @param minSize number? The maximum bound of the context size query.
+     * @param maxSize number?
+     * @returns (ContextSizeResponse | null)
+     */
+    isSizeBetween(minSize: number | null, maxSize?: number | null): ContextSizeResponse | null {
+        return FBInstant.context.isSizeBetween(minSize, maxSize);
+    }
+
+    /**
+     * @en Request a switch into a specific context. If the player does not have permission to enter that context, or if the player does not provide permission for the game to enter that context, this will reject. Otherwise, the promise will resolve when the game has switched into the specified context.
+     * @param id string ID of the desired context or the string SOLO to switch into a solo context.
+     * switchSilentlyIfSolo boolean If switching into a solo context, set this to true to switch silently, with no confirmation dialog or toast. This only has an effect when switching into a solo context. (optional, default false).
+     * @returns Promise A promise that resolves when the game has switched into the specified context, or rejects otherwise.
+     */
+    switchAsync(id: string): Promise<void> {
+        return new Promise((resolve, reject) => {
+            FBInstant.context
+                .switchAsync(id)
+                .then(() => {
+                    resolve();
+                })
+                .catch(() => {
+                    reject();
+                });
+        });
+    }
+
+    /**
+     * @en Opens a context selection dialog for the player. If the player selects an available context, the client will attempt to switch into that context, and resolve if successful. Otherwise, if the player exits the menu or the client fails to switch into the new context, this function will reject.
+     * @param options options Object? An object specifying conditions on the contexts that should be offered.
+    
+    options.filters Array<ContextFilter>? The set of filters to apply to the context suggestions.
+
+    options.maxSize number? The maximum number of participants that a suggested context should ideally have.
+
+    options.minSize number? The minimum number of participants that a suggested context should ideally have.
+     * @returns Promise A promise that resolves when the game has switched into the context chosen by the user. Otherwise, the promise will reject (if the user cancels out of the dialog, for example).
+     */
+    chooseAsync(options?: OptionsChooseAsync): Promise<void> {
+        return new Promise((resolve, reject) => {
+            FBInstant.context
+                .chooseAsync(options)
+                .then(() => {
+                    resolve();
+                }).
+                catch(() => {
+                    reject();
+                });
+        });
+    }
+
+    /**
+     * @en Attempts to create a context between the current player and a specified player or a list of players. This API supports 3 use cases: 1) When the input is a single playerID, it attempts to create or switch into a context between a specified player and the current player 2) When the input is a list of connected playerIDs, it attempts to create a context containing all the players 3) When there's no input, a friend picker will be loaded to ask the player to create a context with friends to play with
+
+     For each of these cases, the returned promise will reject if any of the players listed are not Connected Players of the current player, or if the player denies the request to enter the new context. Otherwise, the promise will resolve when the game has switched into the new context.
+     * @param suggestedPlayerIDs (string | Array<string>)?
+
+      null (string | Array<String>) ?suggestedPlayerIDs A list of game suggested playerIDs or a single suggested playerID or no input.
+     * @returns Promise A promise that resolves when the game has switched into the new context, or rejects otherwise.
+     */
+    createAsync(suggestedPlayerIDs?: string | Array<string>): Promise<void> {
+        return new Promise((resolve, reject) => {
+            FBInstant.context
+                .createAsync(suggestedPlayerIDs)
+                .then(() => {
+                    resolve();
+                })
+                .catch(() => {
+                    reject();
+                });
+        });
+    }
+
+    /**
+     * @en Gets an array of ContextPlayer objects containing information about active players in the current context (people who played the game in the current context in the last 90 days). This may include the current player.
+     * @returns Promise<Array<ContextPlayer>>
+     */
+    getPlayersAsync(): Promise<Array<ContextPlayer>> {
+        return new Promise((resolve, reject) => {
+            FBInstant.context
+                .getPlayersAsync()
+                .then((players: ContextPlayer[]) => {
+                    resolve(players);
+                })
+                .catch(() => {
+                    reject();
+                });
+        });
+    }
+}
+
+/**
+ * @en Representation of a group of players playing together in a messenger thread.
+ */
+interface GamingSquad {
+    // args: GamingSquadArgs;
+    args: any;
+
+    /**
+     * @en The unique gaming squad ID.
+     * @returns string The gaming squad ID
+     */
+    getID(): string;
+
+    /**
+     * @en The gaming squad name.
+     * @returns string The name of the squad
+     */
+    getName(): string;
+
+    /**
+    * @en The URI for the gaming squad image.
+    * @returns string URI for gaming squad image
+    */
+    getImage(): string;
+
+    /**
+    * @en The unique context ID that is associated with this gaming squad.
+    * @returns string The context ID for this gaming squad
+    */
+    getContextID(): string;
+
+    /**
+     * @en Brings up a dialog for the player to join a Squad if they are not part of it. If the user accepts, they become part of the squad thread and the game context switches into the squad. If they are part of the Squad already, the dialog will prompt the user to switch into the Squad context.
+     * @returns Promise
+     */
+    joinAsync(): Promise<any>;
+
+    /**
+     * @en Brings up a dialog for the player to confirm if they want to leave the Squad. If the player confirms, they are removed from the Squad and the messenger thread that is associated with this Squad.
+     * @returns Promise
+     */
+    leaveAsync(): Promise<any>;
+
+    /**
+     * @en Brings up a dialog for the player to add their friends to the current squad.
+     * @returns Promise
+     */
+    addToSquadAsync(): Promise<any>;
+}
+
+class Squad {
+    /**
+     * @deprecated This function must be called in GamingSquad
+     * @en Brings up a dialog for the player to join a Squad if they are not part of it. If the user accepts, they become part of the squad thread and the game context switches into the squad. If they are part of the Squad already, the dialog will prompt the user to switch into the Squad context.
+     * @returns Promise
+     */
+    joinAsync(): any { };
+
+    /**
+     * @deprecated This function must be called in GamingSquad
+     * @en Brings up a dialog for the player to confirm if they want to leave the Squad. If the player confirms, they are removed from the Squad and the messenger thread that is associated with this Squad.
+     * @returns Promise
+     */
+    leaveAsync(): any { };
+
+    /**
+     * @deprecated This function must be called in GamingSquad
+     * @en Brings up a dialog for the player to add their friends to the current squad.
+     * @returns Promise
+     */
+    addToSquadAsync(): any { };
+
+    /**
+     * @en Brings up a dialog for the player to create a Squad. If the player creates the Squad, the promise will resolve with the new Squad instance and the game session will be switched into this newly created Squad context. The promise will reject if the player closes the dialog instead.
+     * @param payload CreateGamingSquadPayload?
+     * @returns Promise<GamingSquad>
+     */
+    createAsync(): Promise<GamingSquad> {
+        return new Promise((resolve, reject) => {
+            FBInstant.squads.createAsync()
+                .then((squad: GamingSquad) => {
+                    resolve(squad);
+                })
+                .catch(() => {
+                    reject();
+                });
+        });
+    }
+
+    /**
+     * @en Fetch an existing Squad. If the Squad does not exist, or the player cannot interact with the Squad, this API will reject with the GAMING_SQUAD_NOT_FOUND error code.
+     * @param id string The squad ID or context ID.
+     * @returns Promise<GamingSquad>
+     */
+    getAsync(id: string): Promise<GamingSquad> {
+        return new Promise((resolve, reject) => {
+            FBInstant.squads.getAsync(id)
+                .then((squad: GamingSquad) => {
+                    resolve(squad);
+                })
+                .catch(() => {
+                    reject();
+                });
+        });
+    }
+
+    /**
+     * @en Fetches the current player's existing squads, if any.
+     * @returns Promise<Array<GamingSquad>>
+     */
+    getPlayerSquadsAsync(): Promise<Array<GamingSquad>> {
+        return new Promise((resolve, reject) => {
+            FBInstant.squads.getPlayerSquadsAsync()
+                .then((squads: GamingSquad[]) => {
+                    resolve(squads);
+                })
+                .catch(() => {
+                    reject();
+                });
+        });
+    }
+
+    /**
+     * @en Fetches the current player's existing squads, if any.
+     * @returns Promise<boolean> Returns whether the current user is eligible to use squads.
+     */
+    canUseSquadsAsync(): Promise<boolean> {
+        return new Promise((resolve, reject) => {
+            FBInstant.squads.canUseSquadsAsync()
+                .then((isEligible: boolean) => {
+                    resolve(isEligible);
+                })
+                .catch(() => {
+                    reject();
+                });
+        });
+    }
+}
+
+/**
+ * @en Represents a tournament bracket
+ */
+interface Arena {
+    getID(): string;
+
+    getTitle(): string;
+
+    getNumUsersRegistered(): number;
+
+    getStatus(): string;
+
+    getCreationTime(): number;
+
+    /**
+     * @en Returns the context ID of the match the player is in for this arena.
+     */
+    getContextIDForPlayer(): string;
+
+    /**
+     * @en Brings up a dialog showing Arena details and prompting the user to register for the Arena if the user is not registered to it already. If the user click on 'Register', they become registered to the Arena, but if the user dimisses the dialog, USER_INPUT error will be thrown.
+     * @returns Promise
+     */
+    registerAsync(): Promise<any>;
+}
+
+class Arenas {
+    /**
+     * @deprecated This function must be called in Arena
+     * @en Brings up a dialog showing Arena details and prompting the user to register for the Arena if the user is not registered to it already. If the user click on 'Register', they become registered to the Arena, but if the user dimisses the dialog, USER_INPUT error will be thrown.
+     * @returns Promise
+     */
+    registerAsync(): any { }
+
+    /**
+     * @en Fetches the all the NOT_STARTED and RUNNING arenas that belong to the game.
+     * @returns Promise<Array<Arena>>
+     */
+    getArenasAsync(): Promise<Array<Arena>> {
+        return new Promise((resolve, reject) => {
+            FBInstant.arenas.getArenasAsync()
+                .then((arenas: Array<Arena>) => {
+                    resolve(arenas);
+                })
+                .catch(() => {
+                    reject();
+                });
+        });
+    }
+}
+
+class Community {
+    /**
+     * @en Check if user can get live streams.
+     * @returns Promise<boolean> Returns bool for whether user/game can get live streams.
+     */
+    canGetLiveStreamsAsync(): Promise<boolean> {
+        return new Promise((resolve, reject) => {
+            FBInstant.community.canGetLiveStreamsAsync()
+                .then((data: boolean) => {
+                    resolve(data);
+                })
+                .catch(() => {
+                    reject();
+                });
+        });
+    }
+
+    /**
+     * 
+     */
+    canFollowOfficialPageAsync(){
+        
+    }
+}
+
 export class FBInstantLib {
 
     /**
@@ -194,8 +746,34 @@ export class FBInstantLib {
      */
     inventory: Inventory;
 
+    /**
+     * @vn
+     * @en Contains functions and properties related to the current player.
+     */
+    player: Player;
+
+    /**
+     * @en Contains functions and properties related to the current game context.
+     */
+    context: Context;
+
+    /**
+     * @en Contains functions and properties related to gaming squads.
+     */
+    squads: Squad;
+
+    /**
+     * @en Contains functions and properties related to arenas.
+     */
+    arenas: Arenas;
+
+    /**
+     * @en [IN CLOSED BETA] Contains functions and properties related to gaming community.
+     */
+    community: Community;
+
     async test() {
-        let a = await this.tournament.getTournamentsAsync();
-        // a[0].
+        // let a = await this.squads.getAsync("abc");
+        // a.
     }
 }
