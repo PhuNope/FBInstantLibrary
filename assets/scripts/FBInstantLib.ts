@@ -719,10 +719,702 @@ class Community {
     }
 
     /**
-     * 
+     * @en Check if user can follow official game page.
+     * @returns Promise<boolean> Returns bool for whether user can follow official game page
      */
-    canFollowOfficialPageAsync(){
-        
+    canFollowOfficialPageAsync(): Promise<boolean> {
+        return new Promise((resolve, reject) => {
+            FBInstant.community.canFollowOfficialPageAsync()
+                .then((data: boolean) => {
+                    resolve(data);
+                })
+                .catch(() => {
+                    reject();
+                });
+        });
+    }
+
+    /**
+     * @en Check if user can join official game group
+     * @returns Promise<boolean> Returns bool for whether user can join official game group
+     */
+    canJoinOfficialGroupAsync(): Promise<boolean> {
+        return new Promise((resolve, reject) => {
+            FBInstant.community.canJoinOfficialGroupAsync()
+                .then((data: boolean) => {
+                    resolve(data);
+                })
+                .catch(() => {
+                    reject();
+                });
+        });
+    }
+
+    /**
+     * @deprecated getLiveStreamsAsync is deprecated. Use liveStreamsOverlayAsync instead.
+     */
+    getLiveStreamsAsync() { }
+
+    /**
+     * @en Renders overlay with grid of live streams.
+     * @returns Promise
+     */
+    liveStreamsOverlayAsync(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            FBInstant.community.liveStreamsOverlayAsync()
+                .then(() => {
+                    resolve();
+                })
+                .catch(() => {
+                    reject();
+                });
+        });
+    }
+
+    /**
+     * @en Renders overlay with follow official page CTA.
+     * @returns Promise
+     */
+    followOfficialPageAsync(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            FBInstant.community.followOfficialPageAsync()
+                .then(() => {
+                    resolve();
+                })
+                .catch(() => {
+                    reject();
+                });
+        });
+    }
+
+    /**
+     * @en Renders overlay with join group CTA.
+     * @returns Promise
+     */
+    joinOfficialGroupAsync(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            FBInstant.community.joinOfficialGroupAsync()
+                .then(() => {
+                    resolve();
+                })
+                .catch(() => {
+                    reject();
+                });
+        });
+    }
+}
+
+/**
+ * @en The placement where the live video comment view will display.
+ * @property TOP_LEFT string The top left of the game
+ * @property TOP_CENTER string The top center of the game
+ * @property TOP_RIGHT string The top right of the game
+ * @property BOTTOM_LEFT string The bottom left of the game
+ * @property BOTTOM_CENTER string The bottom center of the game
+ * @property BOTTOM_RIGHT string The bottom right of the game
+ */
+type LiveVideoCommentViewPlacement = "TOP_LEFT" | "TOP_CENTER" | "TOP_RIGHT" | "BOTTOM_LEFT" | "BOTTOM_CENTER" | "BOTTOM_RIGHT";
+
+/**
+ * @en Represents the state of a live comment view.
+ */
+type LiveVideoCommentViewState = {
+    /**
+     * @en Show or hide the live comment view.
+     */
+    show?: boolean,
+
+    /**
+     * @en The chat placement.
+     */
+    docked_location?: LiveVideoCommentViewPlacement;
+};
+
+/**
+ * @en Represents display position and dimensions of the view.
+ */
+type LiveVideoCommentDisplayRect = {
+    /**
+     * @en the distance the view is from the left of the game view.
+     */
+    x: number,
+
+    /**
+     * @en the distance the view is from the top of the game view.
+     */
+    y: number,
+
+    /**
+     * @en the width of the view.
+     */
+    width: number,
+
+    /**
+     * @en the height of the view.
+     */
+    height: number;
+};
+
+/**
+ * @en Represents an instance of live comment view.
+ */
+interface LiveVideoCommentView {
+    // constructor(data: LiveVideoCommentViewData)
+
+    /**
+     * @en Return the ID of the comment channel.
+     */
+    getChannelID(): string;
+
+    /**
+     * @en Return the ID of the live comment view.
+     */
+    getInstanceID(): string;
+
+    /**
+     * @en Get the current state of the live comment view.
+     */
+    getStateAsync(): Promise<LiveVideoCommentViewState>;
+
+    /**
+     * @en Get the native width and height of the live comment view.
+     */
+    getDisplayRectAsync(): Promise<LiveVideoCommentDisplayRect>;
+
+    /**
+     * @en Update the state of the live comment view.
+     * @param state LiveVideoCommentViewState All fields are optional and only the properties that are included in this object will be updated.
+     */
+    setState(state?: LiveVideoCommentViewState): void;
+
+    /**
+     * @en Destroy the live comment view.
+     */
+    destroy(): void;
+}
+
+class LiveVideoComment {
+    /**
+     * @en Creates a live comment view.
+     * @param channelID string ID of the live comment view to display.
+     * @param initialState LiveVideoCommentViewState? Initial state of the comment view. Optional. Defaults value is { show: true } (optional, default {}).
+     * @returns Promise<LiveVideoCommentView>
+     */
+    createAsync(channelID: string, initialState?: LiveVideoCommentViewState): Promise<LiveVideoCommentView> {
+        return new Promise((resolve, reject) => {
+            FBInstant.liveVideoCommentView.createAsync(channelID)
+                .then((liveVideoCommentView: LiveVideoCommentView) => {
+                    resolve(liveVideoCommentView);
+                })
+                .catch(() => {
+                    reject();
+                });
+        });
+    }
+}
+
+
+/**
+ * @en Live Match status that may be returned by the Instant Games API.
+ * @property PENDING string Match hasn't started yet
+ * @property RUNNING string Match has begun and is running
+ * @property CONCLUDED string Match has been ended explicitly
+ * @property ABANDONED string All the participants in the call have left the match
+ */
+type LiveMatchStatus = "PENDING" | "RUNNING" | "CONCLUDED" | "ABANDONED";
+
+/**
+ * @en An Instant Games live match status, one of LiveMatchStatus
+ */
+type LiveMatchStatusType = LiveMatchStatus;
+
+/**
+ * @en Represents information about a player who is a participant in a real-time match.
+ */
+interface LiveMatchPlayer {
+    /**
+     * @en Get the id of the live match player.
+     * @returns string The ID of the live match player
+     */
+    getID(): string;
+
+    /**
+     * @en Get the player's display name.
+     * @returns string? The player's display name
+     */
+    getName(): string;
+
+    /**
+     * @en Get the player's public profile photo.
+     * @returns string? A url to the player's public profile photo
+     */
+    getPhoto(): string;
+}
+
+/**
+ * @en An instant game live match that is played in a Messenger Rooms call simultaneously by all the participants.
+ */
+interface LiveMatch {
+    // args LiveMatchArgs;
+
+    /**
+     * @en The unique live match ID.
+     * @Returns string The live match ID.
+     */
+    getID(): string;
+
+    /**
+     * @en The unique context ID that is associated with this live match.
+     * @returns string The context ID for this live match
+     */
+    getContextID(): string;
+
+    /**
+     * @en The current status of the live match, for example: PENDING, ABANDONED, CONCLUDED, RUNNING.
+     * @returns Promise<LiveMatchStatusType> The status of the live match
+     */
+    getStatusAsync(): Promise<LiveMatchStatusType>;
+
+    /**
+     * @en Retrieves a list of players currently active in the match.
+     * @returns Promise<Array<LiveMatchPlayer>>
+     */
+    getActiveParticipantsAsync(): Promise<Array<LiveMatchPlayer>>;
+}
+
+/**
+ * @en Represents arguments to be sent to load an AR effect in Messenger Rooms.
+ */
+type CameraEffectArgs<T> = Required<T> & { effectID: string; };
+
+/**
+ * @en Represents an AR effect object that can be shown in a Messenger Rooms call.
+ */
+interface CameraEffect {
+    /**
+     * @en The unique camera effect ID.
+     * @returns string The camera effect ID
+     */
+    getID(): string;
+}
+
+class Room {
+    /**
+     * @en Shows the AR effect for the user in the room session. If the user has a non-game effect applied, it will prompt the user for permission for the first time. If the user denis, the promise is rejected, otherwise it is resolved after applying the effect.
+     * @returns Promise Resolves when the effect is applied to the player
+     */
+    showAsync() {
+        return new Promise((resolve, reject) => {
+
+        });
+    }
+
+    /**
+     * @en Retrieves the current real-time match for the gameplay environment, if one exists.
+     * @returns Promise<LiveMatch>
+     */
+    getCurrentMatchAsync(): Promise<LiveMatch> {
+        return new Promise((resolve, reject) => {
+            FBInstant.room.getCurrentMatchAsync()
+                .then((match: LiveMatch) => {
+                    resolve(match);
+                })
+                .catch(() => {
+                    reject();
+                });
+        });
+    }
+
+    /**
+     * @en Retrieves and loads a specified AR effect that has been registered for the game
+     * @param cameraEffectArgs CameraEffectArgs The args representing the effect to be loaded.
+     * @returns Promise<CameraEffect>
+     */
+    loadCameraEffectAsync<T>(cameraEffectArgs: CameraEffectArgs<T>): Promise<CameraEffect> {
+        return new Promise((resolve, reject) => {
+            FBInstant.room.loadCameraEffectAsync(cameraEffectArgs)
+                .then((effect: CameraEffect) => {
+                    resolve(effect);
+                })
+                .catch(() => {
+                    reject();
+                });
+        });
+    }
+
+    /**
+     * @en Clears the current AR effect in the rooms call. If an effect is present that was not applied by the game, the player will be prompted to approve the removal of the effect. The API will resolve after the effect is cleared, or will reject if the user denies the effect removal.
+     * @returns Promise Resolves if the effect is cleared.
+     */
+    clearCameraEffectAsync(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            FBInstant.room.clearCameraEffectAsync()
+                .then(() => {
+                    resolve();
+                })
+                .catch(() => {
+                    reject();
+                });
+        });
+    }
+}
+
+/**
+ * @en The configuration of a purchase request for a product registered to the game.
+ */
+type PurchaseConfig = {
+    /**
+     * @en The identifier of the product to purchase
+     */
+    productID: string,
+
+    /**
+     * @en An optional developer-specified payload, to be included in the returned purchase's signed request.
+     */
+    developerPayload?: string;
+};
+
+/**
+ * @en Purchase Platforms that may be returned by subscriptions API, representing the platform by which the user made the purchase.
+ */
+type PurchasePlatform = "FB" | "GOOGLE" | "APPLE" | "OC";
+
+/**
+ * @example Eii6e636mz5J47sfqAYEK40jYAwoFqi3x5bxHkPG4Q4.eyJhbGdvcml0aG0iOiJITUFDLVNIQTI1NiIsImlzc3VlZF9hdCI6MTUwMDM5ODY3NSwicGxheWVyX2lkIjoiMTI0OTUyNTMwMTc1MjIwMSIsInJlcXVlc3RfcGF5bG9hZCI6Im15X2ZpcnN0X3JlcXVlc3QifQ
+ */
+type SignedPurchaseRequest = string;
+
+/**
+ * @en Represents an individual purchase of a game product.
+ */
+type Purchase = {
+    /**
+     * @en A developer-specified string, provided during the purchase of the product.
+     */
+    developerPayload?: string,
+
+    /**
+     * @en Whether or not the purchase has been consumed.
+     */
+    isConsumed: boolean,
+
+    /**
+     * @en The current status of the purchase, such as 'charge' or 'refund'.
+     */
+    paymentActionType: string,
+
+    /**
+     * @en The identifier for the purchase transaction.
+     */
+    paymentID: string,
+
+    /**
+     * @en The product's game-specified identifier.
+     */
+    productID: string,
+
+    /**
+     * @en The platform associated with the purchase, such as "FB" for Facebook and "GOOGLE" for Google.
+     */
+    purchasePlatform: PurchasePlatform,
+
+    /**
+     * @en Contains the local amount and currency associated with the purchased item.
+     */
+    purchasePrice: Object,
+
+    /**
+     * @en Unix timestamp of when the purchase occurred.
+     */
+    purchaseTime: string,
+
+    /**
+     * @en A token representing the purchase that may be used to consume the purchase.
+     */
+    purchaseToken: string,
+
+    /**
+     * @en Server-signed encoding of the purchase request.
+     */
+    signedRequest: SignedPurchaseRequest;
+};
+
+/**
+ * @en Represents a game's product information.
+ */
+type Product = {
+    /**
+     * @en The title of the product.
+     */
+    title: string,
+
+    /**
+     * @en The product's game-specified identifier.
+     */
+    productID: string,
+
+    /**
+     * @en The product description.
+     */
+    description: string,
+
+    /**
+     * @en A link to the product's associated image.
+     */
+    imageURI?: string,
+
+    /**
+     * @en The price of the product.
+     */
+    price: string,
+
+    /**
+     * @en The currency code for the product.
+     */
+    priceCurrencyCode: string,
+
+    /**
+     * @en The numeric price of a product.
+     */
+    priceAmount: number;
+};
+
+/**
+ * @en Subscription Terms that may be returned by subscriptions API, representing the billing cycle of the subscription.
+ * @properties WEEKLY string The user will be charged every week.
+ * 
+ * BIWEEKLY string The user will be charged every two weeks.
+ * 
+ * MONTHLY string The user will be charged every month.
+ * 
+ * QUARTERLY string The user will be charged every three months.
+ * 
+ * SEMIANNUAL string The user will be charged every six months.
+ * 
+ * ANNUAL string The user will be charged every year.
+ */
+type SubscriptionTerm = "WEEKLY" | "BIWEEKLY" | "MONTHLY" | "QUARTERLY" | "SEMIANNUAL" | "ANNUAL";
+
+/**
+ * @en [IN CLOSED BETA]
+ * 
+ * Represents a game's subscribable product information.
+ */
+type SubscribableProduct = {
+    /**
+     * @en The billing cycle of a subscription.
+     */
+    subscriptionTerm: SubscriptionTerm;
+};
+
+/**
+ * @en Represents the purchase of a subscription.
+ */
+type Subscription = {
+    /**
+     * @en The Unix timestamp of when the subscription entitlement will no longer be active, if subscription not renewed or canceled. Otherwise, null.
+     */
+    deactivationTime?: number,
+
+    /**
+     * @en Whether or not the user is an active subscriber and should receive entitlement to the subscription benefits.
+     */
+    isEntitlementActive: boolean,
+
+    /**
+     * @en The current start Unix timestamp of the latest billing cycle.
+     */
+    periodStartTime: number,
+
+    /**
+     * @en The current end Unix timestamp of the latest billing cycle.
+     */
+    periodEndTime: number,
+
+    /**
+     * @en The corresponding subscribable product's game-specified identifier.
+     */
+    productID: string,
+
+    /**
+     * @en The platform associated with the purchase, such as "FB" for Facebook and "GOOGLE" for Google.
+     */
+    purchasePlatform: PurchasePlatform,
+
+    /**
+     * @en Contains the local amount and currency.
+     */
+    purchasePrice: Object,
+
+    /**
+     * @en Unix timestamp of when the purchase occurred.
+     */
+    purchaseTime: string,
+
+    /**
+     * @en A token representing the purchase that may be used to consume the purchase.
+     */
+    purchaseToken: Object,
+
+    /**
+     * @en Server-signed encoding of the purchase request.
+     */
+    signedRequest: SignedPurchaseRequest,
+
+    /**
+     * @en The billing cycle of a subscription.
+     */
+    subscriptionTerm: SubscriptionTerm;
+};
+
+class Payment {
+    /**
+     * @en Fetches the game's product catalog.
+     * @returns Promise<Array<Product>> The set of products that are registered to the game.
+     */
+    getCatalogAsync(): Promise<Array<Product>> {
+        return new Promise((resolve, reject) => {
+            FBInstant.payments.getCatalogAsync()
+                .then((catalog: Array<Product>) => {
+                    resolve(catalog);
+                })
+                .catch(() => {
+                    reject();
+                });
+        });
+    }
+
+    /**
+     * @en Begins the purchase flow for a specific product. Will immediately reject if called before FBInstant.startGameAsync() has resolved.
+     * @param purchaseConfig PurchaseConfig The purchase's configuration details.
+     * @returns Promise<Purchase> A Promise that resolves when the product is successfully purchased by the player. Otherwise, it rejects.
+     */
+    purchaseAsync(purchaseConfig: PurchaseConfig): Promise<Purchase> {
+        return new Promise((resolve, reject) => {
+            FBInstant.payments.purchaseAsync(purchaseConfig)
+                .then((purchase: Purchase) => {
+                    resolve(purchase);
+                })
+                .catch(() => {
+                    reject();
+                });
+        });
+    }
+    /**
+     * @en Fetches all of the player's unconsumed purchases. The game must fetch the current player's purchases as soon as the client indicates that it is ready to perform payments-related operations, i.e. at game start. The game can then process and consume any purchases that are waiting to be consumed.
+     * @returns Promise<Array<Purchase>> The set of purchases that the player has made for the game.
+     */
+    getPurchasesAsync(): Promise<Array<Purchase>> {
+        return new Promise((resolve, reject) => {
+            FBInstant.payments.getPurchasesAsync()
+                .then((purchases: Array<Purchase>) => {
+                    resolve(purchases);
+                })
+                .catch(() => {
+                    reject();
+                });
+        });
+    }
+
+    /**
+     * @en Consumes a specific purchase belonging to the current player. Before provisioning a product's effects to the player, the game should request the consumption of the purchased product. Once the purchase is successfully consumed, the game should immediately provide the player with the effects of their purchase.
+     * @param purchaseToken string The purchase token of the purchase that should be consumed.
+     * @returns Promise A Promise that resolves when the purchase has been consumed successfully.
+     */
+    consumePurchaseAsync(purchaseToken: string): Promise<void> {
+        return new Promise((resolve, reject) => {
+            FBInstant.payments.consumePurchaseAsync(purchaseToken)
+                .then(() => {
+                    resolve();
+                })
+                .catch(() => {
+                    reject();
+                });
+        });
+    }
+
+    /**
+     * @en Sets a callback to be triggered when Payments operations are available.
+     * @param callback Function The callback function to be executed when Payments are available.
+     * @returns void
+     */
+    onReady(callback: Function): void {
+        FBInstant.payments.onReady(callback);
+    }
+
+    /**
+     * @en [IN CLOSED BETA]       
+     * 
+     * Fetches the game's catalog for subscribable products.
+     * @Returns Promise<Array<SubscribableProduct>> The set of subscribable products that are registered to the game.
+     */
+    getSubscribableCatalogAsync(): Promise<Array<SubscribableProduct>> {
+        return new Promise((resolve, reject) => {
+            FBInstant.payments.getSubscribableCatalogAsync()
+                .then((catalog: Array<SubscribableProduct>) => {
+                    resolve(catalog);
+                })
+                .catch(() => {
+                    reject();
+                });
+        });
+    }
+
+    /**
+     * @en [IN CLOSED BETA]
+     * 
+     * Begins the purchase subscription flow for a specific product. Will immediately reject if called before FBInstant.startGameAsync() has resolved and fail if the product id passes is not that of a subscribable product.
+     * @param productID string The subscribable product id that will be purchased.
+     * @returns Promise<Subscription> A Promise that resolves when the subscription is successfully purchased by the player. Otherwise, it rejects.
+     */
+    purchaseSubscriptionAsync(productID: string): Promise<Subscription> {
+        return new Promise((resolve, reject) => {
+            FBInstant.payments.purchaseSubscriptionAsync(productID)
+                .then((subscription) => {
+                    resolve(subscription);
+                })
+                .catch(() => {
+                    reject();
+                });
+        });
+    }
+
+    /**
+     * @en [IN CLOSED BETA]
+     * Fetches all of the player's subscriptions.
+     * @returns Promise<Array<Subscription>> The set of subscription purchases' that the player has made for the game.
+     */
+    getSubscriptionsAsync(): Promise<Array<Subscription>> {
+        return new Promise((resolve, reject) => {
+            FBInstant.payments.getSubscriptionsAsync()
+                .then((subscriptions: Array<Subscription>) => {
+                    resolve(subscriptions);
+                })
+                .catch(() => {
+                    reject();
+                });
+        });
+    }
+
+    /**
+     * @en [IN CLOSED BETA]
+     * 
+     * Starts the asynchronous process of cancelling an existing subscription. This operation will only work if the subscription entitlement is active. If the promise is resolved, this is only an indication that the cancellation has been kicked off and NOT that it has necessarily succeeded.
+     * 
+     * The subscription's deactivationTime and isEntitlementActive properties should be queried for the latest status.
+     * @param purchaseToken string The purchase token of the purchase that should be consumed.
+     * @returns Promise A Promise that resolves when the purchase has been consumed successfully.
+     */
+    cancelSubscriptionAsync(purchaseToken: string): Promise<void> {
+        return new Promise((resolve, reject) => {
+            FBInstant.payme.nts.cancelSubscriptionAsync(purchaseToken)
+                .then(() => {
+                    resolve();
+                })
+                .catch(() => {
+                    reject();
+                });
+        });
     }
 }
 
@@ -772,8 +1464,23 @@ export class FBInstantLib {
      */
     community: Community;
 
+    /**
+     * @en [IN CLOSED BETA] Contains functions and properties related to live comment views.
+     */
+    liveVideoCommentView: LiveVideoComment = new LiveVideoComment();
+
+    /**
+     * @en Contains functions and properties related to the messenger rooms environment.
+     */
+    room: Room = new Room();
+
+    /**
+     * @en Contains functions and properties related to payments and purchases of game products.
+     */
+    payments: Payment = new Payment();
+
     async test() {
-        // let a = await this.squads.getAsync("abc");
+        // let a: Purchase = { purchasePlatform: };
         // a.
     }
 }
